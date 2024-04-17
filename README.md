@@ -17,20 +17,9 @@ princípios:
 2.  Cada **variável** forma uma **coluna**.
 3.  Cada **valor** forma uma **célula**.
 
-A Figura
-<a href="#fig-principios-tidy-data" class="quarto-xref">Figura 1</a>
+A <a href="#fig-principios-tidy-data" class="quarto-xref">Figura 1</a>
 ilustra esses princípios.
 
-<details class="code-fold">
-<summary>Código</summary>
-
-``` r
-knitr::include_graphics(
-  "https://d33wubrfki0l68.cloudfront.net/6f1ddb544fc5c69a2478e444ab8112fb0eea23f8/91adc/images/tidy-1.png"
-)
-```
-
-</details>
 ![](https://d33wubrfki0l68.cloudfront.net/6f1ddb544fc5c69a2478e444ab8112fb0eea23f8/91adc/images/tidy-1.png)
 
 Vamos analisar o primeiro princípio: cada observação forma uma linha.

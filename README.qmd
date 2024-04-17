@@ -26,11 +26,12 @@ O conceito foi proposto por Hadley Wickham em 2014 e é baseado em três princí
 2. Cada **variável** forma uma **coluna**.
 3. Cada **valor** forma uma **célula**.
 
-A Figura @fig-principios-tidy-data ilustra esses princípios.
+A @fig-principios-tidy-data ilustra esses princípios.
 
 ```{r}
 #| label: fig-principios-tidy-data
 #| fig-cap: "As seguintes três regras tornam um conjunto de dados tidy: variáveis são colunas, observações são linhas e valores são células. Fonte: R for Data Science."
+#| echo: false
 
 knitr::include_graphics(
   "https://d33wubrfki0l68.cloudfront.net/6f1ddb544fc5c69a2478e444ab8112fb0eea23f8/91adc/images/tidy-1.png"
