@@ -1,0 +1,4 @@
+- source: README.qmd
+  quarto-pub:
+    - id: 1f56a3c7-17b8-4121-8a2e-9b43cbd3c13d
+      url: 'https://jtrecenti.quarto.pub/tidy'
