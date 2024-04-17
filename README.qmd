@@ -1,6 +1,8 @@
 ---
 title: "Dados arrumados (tidy data)"
 format:
+  gfm:
+    code-fold: true
   html:
     code-fold: true
   pdf: default
