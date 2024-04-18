@@ -628,9 +628,195 @@ Figura&nbsp;1: As seguintes três regras tornam um conjunto de dados tidy: vari�
 <h2 class="anchored" data-anchor-id="aplicações-no-direito">Aplicações no Direito</h2>
 <p>No Direito, tipicamente as bases de dados são organizadas de forma que cada linha representa um processo judicial e cada coluna representa uma variável relacionada ao processo. Por exemplo, podemos ter uma base de dados com as seguintes colunas: <code>número do processo</code>, <code>data de ajuizamento</code>, <code>valor da causa</code>, <code>tipo de ação</code>, <code>juiz responsável</code>, entre outras. Nesse caso, cada linha representa um processo judicial e cada coluna representa uma variável relacionada ao processo.</p>
 <p>Também é possível trabalhar com bases cuja observação não é o processo judicial. Por exemplo, um processo pode ter vários recursos. Nesse caso, podemos colocar cada recurso em uma linha e cada variável relacionada ao recurso em uma coluna. Por exemplo, podemos ter uma base de dados com as seguintes colunas: <code>número do processo</code>, <code>número do recurso</code>, <code>data de interposição</code>, <code>resultado</code>, <code>relator</code>, entre outras. Nesse caso, cada linha representa um recurso e cada coluna representa uma variável relacionada ao recurso.</p>
-<p><img src="cjsg.png" class="img-fluid"></p>
+<p><img src="img/cjsg.png" class="img-fluid"></p>
 <p>Outro exemplo de caso em que a observação não é o processo é quando trabalhamos com as tabelas de partes ou de movimentações do processo. Nesse caso, cada linha representa uma parte ou uma movimentação do processo e cada coluna representa uma variável relacionada à parte ou à movimentação.</p>
-<p><img src="partes.png" class="img-fluid"></p>
+<p><img src="img/partes.png" class="img-fluid"></p>
+</section>
+<section id="exemplo-differences-in-differences-did" class="level2">
+<h2 class="anchored" data-anchor-id="exemplo-differences-in-differences-did">Exemplo: Differences in Differences (DiD)</h2>
+<p>Estamos fazendo uma pesquisa para identificar se houve impacto da troca de juiz no valor de indenização por danos morais em processos judiciais relacionados inscrição indevida no cadastro de inadimplentes. Por hipótese, a troca de juiz pode ter impacto no valor da indenização, pois diferentes juízes podem ter diferentes critérios para determinar o valor da indenização.</p>
+<p>Para isso, desenhamos um experimento da seguinte forma. Coletamos processos de duas varas específicas, uma em que houve troca de juiz e outra em que não houve troca de juiz. Em cada vara, coletamos processos anteriores e posteriores à troca de juiz. Assim, temos quatro grupos: processos anteriores à troca de juiz na vara A, processos posteriores à troca de juiz na vara A, processos anteriores à troca de juiz (da vara A) na vara B e processos posteriores à troca de juiz (da vara A) na vara B.</p>
+<p>Esse é um cenário clássico de <strong>Differences in Differences (DiD)</strong>, uma técnica estatística para estimar o efeito causal de uma intervenção em um grupo de tratamento em relação a um grupo de controle. Nesse caso, a intervenção é a troca de juiz e o grupo de tratamento é a vara A, enquanto o grupo de controle é a vara B. Pela forma em que o judiciário se organiza, temos uma situação de experimento natural, já que os processos são distribuídos aleatoriamente nas varas. Ou seja, os juízes recebem amostras homogêneas e comparáveis de processos.</p>
+<p>A técnica DiD é poderosa porque ela consegue isolar explicações alternativas à mudança de juiz. Por exemplo, a mudança nos valores de indenização poderia ser fruto de uma mudança na legislação ou de uma mudança no entendimento geral do Tribunal ao longo do tempo. A técnica DiD controla essas explicações alternativas, pois compara a variação no valor de indenização entre os grupos de tratamento e controle antes e depois da intervenção. Como, além disso, os processos são distribuídos aleatoriamente, o experimento também controla por características dos processos que poderiam influenciar o valor da indenização.</p>
+<p>A descrição do problema é a seguinte: “Vamos olhar para duas varas de Osasco: a 7ª vara cível e a 2ª vara cível. Na 7ª Vara, o juiz”Liege Gueldini de Moraes” assumiu em 01/05/2022, sucedendo o juiz WILSON LISBOA RIBEIRO. Na 2ª Vara, o juiz MARIO SERGIO LEITE é o juiz da vara desde 10/04/2008. Coletamos uma amostra de processos de cada uma dessas varas, desde 2021, para analisar o valor da indenização por danos morais.</p>
+<p>Após a construção da base, ficamos com a seguinte estrutura:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Código</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>dados_did <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"https://github.com/c-eoe/tidydata/releases/download/data/da_did.csv"</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 344 Columns: 5
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (3): processo, magistrado, vara
+dbl  (1): danos_morais
+date (1): disponibilizacao
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<details class="code-fold">
+<summary>Código</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(dados_did)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 344
+Columns: 5
+$ processo         &lt;chr&gt; "1020804-57.2019.8.26.0405", "1016203-71.2020.8.26.04…
+$ magistrado       &lt;chr&gt; "MARIO SERGIO LEITE", "MARIO SERGIO LEITE", "MARIO SE…
+$ disponibilizacao &lt;date&gt; 2020-06-15, 2021-02-12, 2020-01-07, 2021-06-25, 2021…
+$ vara             &lt;chr&gt; "2ª Vara Cível", "2ª Vara Cível", "2ª Vara Cível", "2…
+$ danos_morais     &lt;dbl&gt; 1451.7067, 1134.0395, 1384.6181, 1381.8672, 1121.6910…</code></pre>
+</div>
+</div>
+<p>Essa base está no formato tidy? Para os fins de nossa análise sim, já que cada linha é um processo, temos uma coluna que identifica a vara, outra que identifica o magistrado e uma última que mostra o valor de indenização. Existem, no entanto, alguns tratamentos necessários para deixar nossa base no formato ideal para aplicação do DiD.</p>
+<p>Para isso, vamos utilizar o chatGPT para nos ajudar no código. Utilizamos o seguinte prompt:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode md code-with-copy"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  Você é um assistente de inteligência artificial que ajuda a escrever códigos R. Em meu estudo, quero fazer uma análise de Diferenças em Diferenças a partir de uma base de dados com a seguinte estrutura:</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  dplyr::glimpse(dados_did)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  # Rows: 344</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  # Columns: 5</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  # $ processo         &lt;chr&gt; "1020804-57.2019.8.26.0405", "1016203-71.2020.8.26.0405", "1026724-12.2…</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  # $ magistrado       &lt;chr&gt; "MARIO SERGIO LEITE", "MARIO SERGIO LEITE", "MARIO SERGIO LEITE", "MARI…</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  # $ disponibilizacao &lt;date&gt; 2020-06-15, 2021-02-12, 2020-01-07, 2021-06-25, 2021-07-13, 2019-10-21…</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  # $ vara             &lt;chr&gt; "2ª Vara Cível", "2ª Vara Cível", "2ª Vara Cível", "2ª Vara Cível", "2ª…</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  # $ danos_morais     &lt;dbl&gt; 1451.7067, 1134.0395, 1384.6181, 1381.8672, 1121.6910, 1313.6028, 1788.…</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  A descrição do problema é a seguinte: "Vamos olhar para duas varas de Osasco: a 7ª vara cível e a 2ª vara cível. Na 7ª Vara, o juiz "Liege Gueldini de Moraes" assumiu em 01/05/2022, sucedendo o juiz WILSON LISBOA RIBEIRO. Na 2ª Vara, o juiz MARIO SERGIO LEITE é o juiz da vara desde 10/04/2008. Coletamos uma amostra de processos de cada uma dessas varas, desde 2021, para analisar o valor da indenização por danos morais."</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  Escreva o código para realizar a análise DiD a partir da estrutura da base de dados fornecida. Faça as transformações necessárias para que a base esteja no formato ideal para a análise, usando o tidyverse.</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>O resultado do chatGPT é o que está nas imagens abaixo:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="img/chatgpt1.png" class="img-fluid figure-img" width="506"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="img/chatgpt2.png" class="img-fluid figure-img" width="503"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="img/chatgpt3.png" class="img-fluid figure-img" width="431"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>O código sugerido, então, foi o seguinte:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="in">library(tidyverse)</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="in">library(lubridate)  # Para manipulação de datas</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="in">dados_filtrados &lt;- dados_did %&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(vara %in% c("2ª Vara Cível", "7ª Vara Cível")) %&gt;%</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="in">    pos_intervencao = as.integer(disponibilizacao &gt;= as.Date("2022-05-01")),</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="in">    tratamento = as.integer(vara == "7ª Vara Cível")</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="in">  )</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="in">glimpse(dados_filtrados)</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="in">table(dados_filtrados$tratamento, dados_filtrados$pos_intervencao)</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="in">resultado_did &lt;- lm(danos_morais ~ tratamento * pos_intervencao, data = dados_filtrados)</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="in">summary(resultado_did)</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Infelizmente, o código não está perfeito. É necessário fazer alguns ajustes, que estão abaixo:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>dados_filtrados <span class="ot">&lt;-</span> dados_did <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pos_intervencao =</span> <span class="fu">as.integer</span>(disponibilizacao <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">"2022-05-01"</span>)),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">tratamento =</span> <span class="fu">as.integer</span>(vara <span class="sc">!=</span> <span class="st">"7ª Vara Cível"</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(dados_filtrados)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 344
+Columns: 7
+$ processo         &lt;chr&gt; "1020804-57.2019.8.26.0405", "1016203-71.2020.8.26.04…
+$ magistrado       &lt;chr&gt; "MARIO SERGIO LEITE", "MARIO SERGIO LEITE", "MARIO SE…
+$ disponibilizacao &lt;date&gt; 2020-06-15, 2021-02-12, 2020-01-07, 2021-06-25, 2021…
+$ vara             &lt;chr&gt; "2ª Vara Cível", "2ª Vara Cível", "2ª Vara Cível", "2…
+$ danos_morais     &lt;dbl&gt; 1451.7067, 1134.0395, 1384.6181, 1381.8672, 1121.6910…
+$ pos_intervencao  &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ tratamento       &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,…</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dados_filtrados <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">media =</span> <span class="fu">mean</span>(danos_morais),</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">desvio_padrao =</span> <span class="fu">sd</span>(danos_morais),</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.by =</span> <span class="fu">c</span>(tratamento, pos_intervencao)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 5
+  tratamento pos_intervencao     n media desvio_padrao
+       &lt;int&gt;           &lt;int&gt; &lt;int&gt; &lt;dbl&gt;         &lt;dbl&gt;
+1          1               0    87 1493.          354.
+2          0               0    78 1532.          383.
+3          0               1    89 1467.          360.
+4          1               1    90 1571.          356.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>resultado_did <span class="ot">&lt;-</span> <span class="fu">lm</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  danos_morais <span class="sc">~</span> tratamento <span class="sc">*</span> pos_intervencao,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> dados_filtrados</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(resultado_did)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = danos_morais ~ tratamento * pos_intervencao, data = dados_filtrados)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-892.44 -236.16  -30.54  220.63 1410.65 
+
+Coefficients:
+                           Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                 1532.47      41.09  37.294   &lt;2e-16 ***
+tratamento                   -39.64      56.59  -0.700   0.4841    
+pos_intervencao              -65.14      56.29  -1.157   0.2480    
+tratamento:pos_intervencao   143.58      78.39   1.831   0.0679 .  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 362.9 on 340 degrees of freedom
+Multiple R-squared:  0.01221,   Adjusted R-squared:  0.003495 
+F-statistic: 1.401 on 3 and 340 DF,  p-value: 0.2423</code></pre>
+</div>
+</div>
+<p>Intervalos de confiança:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Código</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">confint</span>(resultado_did)</span></code><button title="Copiar para a área de transferência" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                2.5 %     97.5 %
+(Intercept)                1451.64352 1613.29505
+tratamento                 -150.94767   71.67130
+pos_intervencao            -175.85190   45.58147
+tratamento:pos_intervencao  -10.62273  297.77277</code></pre>
+</div>
+</div>
+<p>No final, concluímos que a troca de juiz na 7ª Vara cível de Osasco teve um pequeno impacto positivo no valor da indenização por danos morais. No entanto, esse impacto não é estatisticamente significante a nível de 5%. O efeito médio da troca de juiz foi de R$ 143,58, com um intervalo de confiança de 95% entre -R$ 10,62 e R4 297,77.</p>
 </section>
 
 </main>

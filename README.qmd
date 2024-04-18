@@ -208,8 +208,131 @@ No Direito, tipicamente as bases de dados são organizadas de forma que cada lin
 
 Também é possível trabalhar com bases cuja observação não é o processo judicial. Por exemplo, um processo pode ter vários recursos. Nesse caso, podemos colocar cada recurso em uma linha e cada variável relacionada ao recurso em uma coluna. Por exemplo, podemos ter uma base de dados com as seguintes colunas: `número do processo`, `número do recurso`, `data de interposição`, `resultado`, `relator`, entre outras. Nesse caso, cada linha representa um recurso e cada coluna representa uma variável relacionada ao recurso.
 
-![](cjsg.png)
+![](img/cjsg.png)
 
 Outro exemplo de caso em que a observação não é o processo é quando trabalhamos com as tabelas de partes ou de movimentações do processo. Nesse caso, cada linha representa uma parte ou uma movimentação do processo e cada coluna representa uma variável relacionada à parte ou à movimentação.
 
-![](partes.png)
+![](img/partes.png)
+
+## Exemplo: Differences in Differences (DiD)
+
+Estamos fazendo uma pesquisa para identificar se houve impacto da troca de juiz no valor de indenização por danos morais em processos judiciais relacionados inscrição indevida no cadastro de inadimplentes. Por hipótese, a troca de juiz pode ter impacto no valor da indenização, pois diferentes juízes podem ter diferentes critérios para determinar o valor da indenização.
+
+Para isso, desenhamos um experimento da seguinte forma. Coletamos processos de duas varas específicas, uma em que houve troca de juiz e outra em que não houve troca de juiz. Em cada vara, coletamos processos anteriores e posteriores à troca de juiz. Assim, temos quatro grupos: processos anteriores à troca de juiz na vara A, processos posteriores à troca de juiz na vara A, processos anteriores à troca de juiz (da vara A) na vara B e processos posteriores à troca de juiz (da vara A) na vara B.
+
+Esse é um cenário clássico de **Differences in Differences (DiD)**, uma técnica estatística para estimar o efeito causal de uma intervenção em um grupo de tratamento em relação a um grupo de controle. Nesse caso, a intervenção é a troca de juiz e o grupo de tratamento é a vara A, enquanto o grupo de controle é a vara B. Pela forma em que o judiciário se organiza, temos uma situação de experimento natural, já que os processos são distribuídos aleatoriamente nas varas. Ou seja, os juízes recebem amostras homogêneas e comparáveis de processos.
+
+A técnica DiD é poderosa porque ela consegue isolar explicações alternativas à mudança de juiz. Por exemplo, a mudança nos valores de indenização poderia ser fruto de uma mudança na legislação ou de uma mudança no entendimento geral do Tribunal ao longo do tempo. A técnica DiD controla essas explicações alternativas, pois compara a variação no valor de indenização entre os grupos de tratamento e controle antes e depois da intervenção. Como, além disso, os processos são distribuídos aleatoriamente, o experimento também controla por características dos processos que poderiam influenciar o valor da indenização.
+
+A descrição do problema é a seguinte: "Vamos olhar para duas varas de Osasco: a 7ª vara cível e a 2ª vara cível. Na 7ª Vara, o juiz "Liege Gueldini de Moraes" assumiu em 01/05/2022, sucedendo o juiz WILSON LISBOA RIBEIRO. Na 2ª Vara, o juiz MARIO SERGIO LEITE é o juiz da vara desde 10/04/2008. Coletamos uma amostra de processos de cada uma dessas varas, desde 2021, para analisar o valor da indenização por danos morais.
+
+Após a construção da base, ficamos com a seguinte estrutura:
+
+
+```{r}
+dados_did <- read_csv(
+  "https://github.com/c-eoe/tidydata/releases/download/data/da_did.csv"
+)
+
+glimpse(dados_did)
+```
+
+Essa base está no formato tidy? Para os fins de nossa análise sim, já que cada linha é um processo, temos uma coluna que identifica a vara, outra que identifica o magistrado e uma última que mostra o valor de indenização. Existem, no entanto, alguns tratamentos necessários para deixar nossa base no formato ideal para aplicação do DiD.
+
+Para isso, vamos utilizar o chatGPT para nos ajudar no código. Utilizamos o seguinte prompt:
+
+```md
+
+  Você é um assistente de inteligência artificial que ajuda a escrever códigos R. Em meu estudo, quero fazer uma análise de Diferenças em Diferenças a partir de uma base de dados com a seguinte estrutura:
+
+  dplyr::glimpse(dados_did)
+
+  # Rows: 344
+  # Columns: 5
+  # $ processo         <chr> "1020804-57.2019.8.26.0405", "1016203-71.2020.8.26.0405", "1026724-12.2…
+  # $ magistrado       <chr> "MARIO SERGIO LEITE", "MARIO SERGIO LEITE", "MARIO SERGIO LEITE", "MARI…
+  # $ disponibilizacao <date> 2020-06-15, 2021-02-12, 2020-01-07, 2021-06-25, 2021-07-13, 2019-10-21…
+  # $ vara             <chr> "2ª Vara Cível", "2ª Vara Cível", "2ª Vara Cível", "2ª Vara Cível", "2ª…
+  # $ danos_morais     <dbl> 1451.7067, 1134.0395, 1384.6181, 1381.8672, 1121.6910, 1313.6028, 1788.…
+
+  A descrição do problema é a seguinte: "Vamos olhar para duas varas de Osasco: a 7ª vara cível e a 2ª vara cível. Na 7ª Vara, o juiz "Liege Gueldini de Moraes" assumiu em 01/05/2022, sucedendo o juiz WILSON LISBOA RIBEIRO. Na 2ª Vara, o juiz MARIO SERGIO LEITE é o juiz da vara desde 10/04/2008. Coletamos uma amostra de processos de cada uma dessas varas, desde 2021, para analisar o valor da indenização por danos morais."
+
+  Escreva o código para realizar a análise DiD a partir da estrutura da base de dados fornecida. Faça as transformações necessárias para que a base esteja no formato ideal para a análise, usando o tidyverse.
+
+```
+
+O resultado do chatGPT é o que está nas imagens abaixo:
+
+```{r}
+#| echo: false
+knitr::include_graphics("img/chatgpt1.png")
+```
+
+```{r}
+#| echo: false
+knitr::include_graphics("img/chatgpt2.png")
+```
+
+```{r}
+#| echo: false
+knitr::include_graphics("img/chatgpt3.png")
+```
+
+O código sugerido, então, foi o seguinte:
+
+```{{r}}
+library(tidyverse)
+library(lubridate)  # Para manipulação de datas
+
+dados_filtrados <- dados_did %>%
+  filter(vara %in% c("2ª Vara Cível", "7ª Vara Cível")) %>%
+  mutate(
+    pos_intervencao = as.integer(disponibilizacao >= as.Date("2022-05-01")),
+    tratamento = as.integer(vara == "7ª Vara Cível")
+  )
+
+glimpse(dados_filtrados)
+table(dados_filtrados$tratamento, dados_filtrados$pos_intervencao)
+
+resultado_did <- lm(danos_morais ~ tratamento * pos_intervencao, data = dados_filtrados)
+summary(resultado_did)
+
+```
+
+Infelizmente, o código não está perfeito. É necessário fazer alguns ajustes, que estão abaixo:
+
+```{r}
+#| code-fold: false
+
+dados_filtrados <- dados_did |>
+  mutate(
+    pos_intervencao = as.integer(disponibilizacao >= as.Date("2022-05-01")),
+    tratamento = as.integer(vara != "7ª Vara Cível")
+  )
+
+glimpse(dados_filtrados)
+
+dados_filtrados |>
+  summarise(
+    n = n(),
+    media = mean(danos_morais),
+    desvio_padrao = sd(danos_morais),
+    .by = c(tratamento, pos_intervencao)
+  )
+
+resultado_did <- lm(
+  danos_morais ~ tratamento * pos_intervencao,
+  data = dados_filtrados
+)
+
+summary(resultado_did)
+
+```
+
+Intervalos de confiança:
+
+```{r}
+confint(resultado_did)
+```
+
+No final, concluímos que a troca de juiz na 7ª Vara cível de Osasco teve um pequeno impacto positivo no valor da indenização por danos morais. No entanto, esse impacto não é estatisticamente significante a nível de 5%. O efeito médio da troca de juiz foi de R$ 143,58, com um intervalo de confiança de 95% entre -R$ 10,62 e R4 297,77.
